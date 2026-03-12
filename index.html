@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FPCMerch</title>
+
+  <!-- Fuentes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Estilos modulares -->
+  <link rel="stylesheet" href="css/globals.css" />
+  <link rel="stylesheet" href="css/components/navbar.css" />
+  <link rel="stylesheet" href="css/components/home.css" />
+  <link rel="stylesheet" href="css/components/catalog.css" />
+  <link rel="stylesheet" href="css/components/cart.css" />
+  <link rel="stylesheet" href="css/components/auth.css" />
+</head>
+<body>
+
+<!--OVERLAY DE NAVEGACION MOVIL-->
+<div class="nav-overlay" id="navOverlay"></div>
+
+<!-- BARRA DE ANUNCIO SUPERIOR -->
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <span>⚽ ENVÍO GRATIS en compras mayores a $150.000</span>
+    <span class="top-bar-sep">|</span>
+    <span>Devoluciones sin costo en 30 días</span>
+    <span class="top-bar-sep">|</span>
+    <span>Paga en hasta 12 cuotas sin interés</span>
+    <!-- Duplicado para el efecto ticker continuo -->
+    <span>⚽ ENVÍO GRATIS en compras mayores a $150.000</span>
+    <span class="top-bar-sep">|</span>
+    <span>Devoluciones sin costo en 30 días</span>
+    <span class="top-bar-sep">|</span>
+    <span>Paga en hasta 12 cuotas sin interés</span>
+  </div>
+</div>
+
+<!-- NAVBAR PRINCIPAL -->
+<nav class="navbar" id="navbar">
+  <div class="nav-inner">
+
+    <!-- Logo -->
+    <a href="#" class="nav-logo" data-page="home">
+      <span class="logo-ball">⚽</span>
+      <span class="logo-word">FPCMerch</span>
+      <span class="logo-sub">STORE</span>
+    </a>
+
+    <!-- Links centrales -->
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#" class="nav-link" data-page="home">Inicio</a></li>
+      <li><a href="#" class="nav-link" data-page="catalog">Catálogo</a></li>
+      <li class="nav-dropdown">
+        <a href="#" class="nav-link">Categorías <span class="arrow-down">▾</span></a>
+        <ul class="dropdown-menu">
+          <li><a href="#" data-page="catalog" data-filter="camisetas">👕 Camisetas</a></li>
+          <li><a href="#" data-page="catalog" data-filter="pantalones">🩳 Pantalones</a></li>
+          <li><a href="#" data-page="catalog" data-filter="chaquetas">🧥 Chaquetas</a></li>
+          <li><a href="#" data-page="catalog" data-filter="medias">🧦 Medias</a></li>
+          <li><a href="#" data-page="catalog" data-filter="uniformes">🏟️ Uniformes</a></li>
+          <li><a href="#" data-page="catalog" data-filter="accesorios">🎽 Accesorios</a></li>
+        </ul>
+      </li>
+      <li><a href="#" class="nav-link" data-page="contact">Contacto</a></li>
+    </ul>
+
+    <!-- Acciones del navbar -->
+    <div class="nav-actions">
+      <!-- Buscador -->
+      <div class="search-wrap" id="searchWrap">
+        <input type="text" class="search-input" id="searchInput" placeholder="Buscar productos..." />
+        <button class="search-btn" id="searchBtn" aria-label="Buscar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Usuario -->
+      <button class="nav-icon-btn" id="userBtn" aria-label="Mi cuenta" data-page="login">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span class="nav-icon-label" id="userLabel">Entrar</span>
+      </button>
+
+      <!-- Carrito -->
+      <button class="nav-icon-btn cart-btn" id="cartBtn" aria-label="Carrito">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+
+      <!-- Hamburguesa -->
+      <button class="hamburger" id="hamburger" aria-label="Menú">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGINAS (solo una visible a la vez) -->
+<!-- ── PAGINA: HOME ── -->
+<main id="page-home" class="page active">
+
+  <!-- Carrusel hero -->
+  <section class="hero-carousel" id="heroCarousel">
+    <div class="carousel-track" id="carouselTrack">
+
+      <!-- Slide 1 -->
+      <div class="carousel-slide"
+           style="--slide-bg: linear-gradient(135deg, #0a1628 0%, #1a3a1a 60%, #0d4a0d 100%);">
+        <div class="slide-deco hexgrid"></div>
+        <div class="slide-content">
+          <span class="slide-tag">NUEVA TEMPORADA 2025</span>
+          <h1 class="slide-title">Viste como<br /><em>Campeón</em></h1>
+          <p class="slide-desc">Camisetas oficiales de los mejores clubes del mundo. Calidad premium, precio justo.</p>
+          <div class="slide-cta">
+            <button class="btn-hero" data-page="catalog" data-filter="camisetas">Ver camisetas</button>
+            <button class="btn-hero-outline" data-page="catalog">Todo el catálogo</button>
+          </div>
+        </div>
+        <div class="slide-visual">
+          <div class="slide-jersey-mockup green">
+            <div class="jersey-body">
+              <div class="jersey-stripe"></div>
+              <span class="jersey-number">10</span>
+            </div>
+            <div class="jersey-shadow"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="carousel-slide"
+           style="--slide-bg: linear-gradient(135deg, #1a0a28 0%, #3a1a00 60%, #5a2800 100%);">
+        <div class="slide-deco hexgrid orange"></div>
+        <div class="slide-content">
+          <span class="slide-tag">OFERTA ESPECIAL</span>
+          <h1 class="slide-title">Uniformes<br /><em>Completos</em></h1>
+          <p class="slide-desc">Kit completo: camiseta + pantalón + medias. Personalización con número y nombre.</p>
+          <div class="slide-cta">
+            <button class="btn-hero orange" data-page="catalog" data-filter="uniformes">Ver uniformes</button>
+            <button class="btn-hero-outline" data-page="catalog">Ver todo</button>
+          </div>
+        </div>
+        <div class="slide-visual">
+          <div class="slide-jersey-mockup orange">
+            <div class="jersey-body">
+              <div class="jersey-stripe"></div>
+              <span class="jersey-number">7</span>
+            </div>
+            <div class="jersey-shadow"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="carousel-slide"
+           style="--slide-bg: linear-gradient(135deg, #001428 0%, #001e50 60%, #002880 100%);">
+        <div class="slide-deco hexgrid blue"></div>
+        <div class="slide-content">
+          <span class="slide-tag">COLECCIÓN INVIERNO</span>
+          <h1 class="slide-title">Chaquetas<br /><em>Técnicas</em></h1>
+          <p class="slide-desc">Abrigo de alto rendimiento para entrenamientos y partidos. Tecnología Dry-Fit.</p>
+          <div class="slide-cta">
+            <button class="btn-hero blue" data-page="catalog" data-filter="chaquetas">Ver chaquetas</button>
+            <button class="btn-hero-outline" data-page="catalog">Ver todo</button>
+          </div>
+        </div>
+        <div class="slide-visual">
+          <div class="slide-jersey-mockup blue">
+            <div class="jersey-body">
+              <div class="jersey-stripe"></div>
+              <span class="jersey-number">1</span>
+            </div>
+            <div class="jersey-shadow"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /carousel-track -->
+
+    <button class="carousel-btn prev" id="carouselPrev" aria-label="Anterior">&#8249;</button>
+    <button class="carousel-btn next" id="carouselNext" aria-label="Siguiente">&#8250;</button>
+    <div class="carousel-dots" id="carouselDots"></div>
+  </section>
+
+  <!-- Categorías rapidas -->
+  <section class="quick-cats">
+    <div class="container">
+      <div class="quick-cats-grid">
+        <button class="qcat-card" data-page="catalog" data-filter="camisetas">
+          <span class="qcat-icon">👕</span>
+          <span class="qcat-name">Camisetas</span>
+          <span class="qcat-count">24 productos</span>
+        </button>
+        <button class="qcat-card" data-page="catalog" data-filter="pantalones">
+          <span class="qcat-icon">🩳</span>
+          <span class="qcat-name">Pantalones</span>
+          <span class="qcat-count">12 productos</span>
+        </button>
+        <button class="qcat-card" data-page="catalog" data-filter="chaquetas">
+          <span class="qcat-icon">🧥</span>
+          <span class="qcat-name">Chaquetas</span>
+          <span class="qcat-count">8 productos</span>
+        </button>
+        <button class="qcat-card" data-page="catalog" data-filter="uniformes">
+          <span class="qcat-icon">🏟️</span>
+          <span class="qcat-name">Uniformes</span>
+          <span class="qcat-count">10 kits</span>
+        </button>
+        <button class="qcat-card" data-page="catalog" data-filter="medias">
+          <span class="qcat-icon">🧦</span>
+          <span class="qcat-name">Medias</span>
+          <span class="qcat-count">15 pares</span>
+        </button>
+        <button class="qcat-card" data-page="catalog" data-filter="accesorios">
+          <span class="qcat-icon">🎽</span>
+          <span class="qcat-name">Accesorios</span>
+          <span class="qcat-count">20 artículos</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Productos destacados -->
+  <section class="featured-section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="section-sup">LO MÁS VENDIDO</p>
+          <h2 class="section-title">Productos <span>Destacados</span></h2>
+        </div>
+        <button class="btn-see-all" data-page="catalog">Ver todo →</button>
+      </div>
+      <div class="products-grid" id="featuredGrid">
+      </div>
+    </div>
+  </section>
+
+  <!-- Banner promocional -->
+  <section class="promo-banner">
+    <div class="promo-inner container">
+      <div class="promo-text">
+        <span class="promo-tag">PERSONALIZACIÓN</span>
+        <h2>¿Quieres tu nombre<br />y número?</h2>
+        <p>Personaliza cualquier camiseta con tu nombre y número favorito. Impresión de alta calidad que no se despega.</p>
+        <button class="btn-promo" data-page="catalog">Personalizar ahora</button>
+      </div>
+      <div class="promo-art">
+        <div class="promo-jersey-stack">
+          <div class="pj pj-1">10</div>
+          <div class="pj pj-2">7</div>
+          <div class="pj pj-3">9</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust section -->
+  <section class="trust-section">
+    <div class="container">
+      <div class="trust-grid">
+        <div class="trust-item">
+          <span class="trust-icon">🚚</span>
+          <strong>Envío Gratis</strong>
+          <p>En compras desde $150.000</p>
+        </div>
+        <div class="trust-item">
+          <span class="trust-icon">↩️</span>
+          <strong>Devolución Fácil</strong>
+          <p>30 días sin preguntas</p>
+        </div>
+        <div class="trust-item">
+          <span class="trust-icon">🔒</span>
+          <strong>Pago Seguro</strong>
+          <p>SSL 256 bits encriptado</p>
+        </div>
+        <div class="trust-item">
+          <span class="trust-icon">⭐</span>
+          <strong>4.9 / 5.0</strong>
+          <p>+2.800 reseñas verificadas</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main><!-- /page-home -->
+
+<!-- ── PÁGINA: CATALOGO ── -->
+<main id="page-catalog" class="page">
+  <div class="page-hero catalog-hero">
+    <div class="container">
+      <h1 class="page-hero-title">Catálogo</h1>
+      <p class="page-hero-sub">Toda la colección de fútbol en un solo lugar</p>
+    </div>
+  </div>
+
+  <div class="container catalog-layout">
+
+    <!-- Sidebar de filtros -->
+    <aside class="catalog-sidebar">
+      <div class="filter-block">
+        <h3 class="filter-title">Categoría</h3>
+        <ul class="filter-list" id="filterCategory">
+          <li><label><input type="radio" name="cat" value="todos" checked /> Todos</label></li>
+          <li><label><input type="radio" name="cat" value="camisetas" /> Camisetas</label></li>
+          <li><label><input type="radio" name="cat" value="pantalones" /> Pantalones</label></li>
+          <li><label><input type="radio" name="cat" value="chaquetas" /> Chaquetas</label></li>
+          <li><label><input type="radio" name="cat" value="medias" /> Medias</label></li>
+          <li><label><input type="radio" name="cat" value="uniformes" /> Uniformes</label></li>
+          <li><label><input type="radio" name="cat" value="accesorios" /> Accesorios</label></li>
+        </ul>
+      </div>
+
+      <div class="filter-block">
+        <h3 class="filter-title">Precio</h3>
+        <div class="price-range">
+          <input type="range" id="priceRange" min="0" max="500000" value="500000" step="10000" />
+          <div class="price-labels">
+            <span>$0</span>
+            <span id="priceVal">$500.000</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-block">
+        <h3 class="filter-title">Talla</h3>
+        <div class="size-chips" id="sizeFilter">
+          <button class="size-chip active" data-size="todas">Todas</button>
+          <button class="size-chip" data-size="XS">XS</button>
+          <button class="size-chip" data-size="S">S</button>
+          <button class="size-chip" data-size="M">M</button>
+          <button class="size-chip" data-size="L">L</button>
+          <button class="size-chip" data-size="XL">XL</button>
+          <button class="size-chip" data-size="XXL">XXL</button>
+        </div>
+      </div>
+
+      <div class="filter-block">
+        <h3 class="filter-title">Ordenar por</h3>
+        <select class="filter-select" id="sortSelect">
+          <option value="default">Relevancia</option>
+          <option value="price-asc">Precio: menor a mayor</option>
+          <option value="price-desc">Precio: mayor a menor</option>
+          <option value="name-asc">Nombre A-Z</option>
+          <option value="newest">Más nuevos</option>
+        </select>
+      </div>
+
+      <button class="btn-clear-filters" id="clearFilters">Limpiar filtros</button>
+    </aside>
+
+    <!-- Grid de productos -->
+    <div class="catalog-main">
+      <div class="catalog-topbar">
+        <span class="results-count" id="resultsCount">Cargando...</span>
+        <button class="filter-toggle-mobile" id="filterToggleMobile">⚙ Filtros</button>
+      </div>
+      <div class="products-grid" id="catalogGrid">
+      </div>
+      <div class="no-results hidden" id="noResults">
+        <span>😕</span>
+        <p>No encontramos productos con esos filtros.</p>
+        <button class="btn-clear-filters" onclick="clearAllFilters()">Limpiar filtros</button>
+      </div>
+    </div>
+
+  </div>
+</main><!-- /page-catalog -->
+
+<!-- ── PAGINA: DETALLE DE PRODUCTO ── -->
+<main id="page-product" class="page">
+  <div class="container product-detail" id="productDetail">
+    <!-- Generado por JS -->
+  </div>
+</main>
+
+<!-- ── PAGINA: CARRITO ── -->
+<main id="page-cart" class="page">
+  <div class="page-hero">
+    <div class="container">
+      <h1 class="page-hero-title">Mi Carrito</h1>
+    </div>
+  </div>
+  <div class="container cart-layout" id="cartLayout">
+  </div>
+</main>
+
+<!-- ── PAGINA: LOGIN / REGISTRO ── -->
+<main id="page-login" class="page">
+  <div class="auth-wrapper">
+    <div class="auth-visual">
+      <div class="auth-visual-bg"></div>
+      <div class="auth-visual-content">
+        <span class="auth-logo-big">⚽</span>
+        <h2>FPCMerch<br />STORE</h2>
+        <p>Tu tienda oficial de fútbol.<br />Más de 2.800 clientes satisfechos.</p>
+        <div class="auth-stats">
+          <div><strong>+500</strong><span>Productos</span></div>
+          <div><strong>48h</strong><span>Entrega</span></div>
+          <div><strong>4.9★</strong><span>Rating</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-panel">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin">Iniciar sesión</button>
+        <button class="auth-tab" id="tabRegister">Crear cuenta</button>
+      </div>
+
+      <!-- Formulario Login -->
+      <form class="auth-form active" id="formLogin" novalidate>
+        <div class="auth-form-head">
+          <h2>Bienvenido de vuelta</h2>
+          <p>Ingresa a tu cuenta para continuar</p>
+        </div>
+        <div class="field-group">
+          <label>Correo electrónico</label>
+          <input type="email" id="loginEmail" placeholder="tu@correo.com" required />
+          <span class="field-err" id="loginEmailErr"></span>
+        </div>
+        <div class="field-group">
+          <label>Contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="loginPass" placeholder="••••••••" required />
+            <button type="button" class="eye-btn" data-target="loginPass">👁</button>
+          </div>
+          <span class="field-err" id="loginPassErr"></span>
+        </div>
+        <div class="auth-options">
+          <label class="check-label"><input type="checkbox" /> Recordarme</label>
+          <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a>
+        </div>
+        <div class="auth-alert hidden" id="loginAlert"></div>
+        <button type="submit" class="btn-auth">Iniciar sesión</button>
+        <p class="auth-switch">¿No tienes cuenta?
+          <button type="button" class="link-btn" id="goRegister">Regístrate aquí</button></p>
+      </form>
+
+      <!-- Formulario Registro -->
+      <form class="auth-form" id="formRegister" novalidate>
+        <div class="auth-form-head">
+          <h2>Crea tu cuenta</h2>
+          <p>Únete a la comunidad FPCMerch</p>
+        </div>
+        <div class="fields-row">
+          <div class="field-group">
+            <label>Nombre</label>
+            <input type="text" id="regNombre" placeholder="Juan" required />
+            <span class="field-err" id="regNombreErr"></span>
+          </div>
+          <div class="field-group">
+            <label>Apellido</label>
+            <input type="text" id="regApellido" placeholder="García" />
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Correo electrónico</label>
+          <input type="email" id="regEmail" placeholder="tu@correo.com" required />
+          <span class="field-err" id="regEmailErr"></span>
+        </div>
+        <div class="field-group">
+          <label>Contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="regPass" placeholder="Mínimo 6 caracteres" required />
+            <button type="button" class="eye-btn" data-target="regPass">👁</button>
+          </div>
+          <span class="field-err" id="regPassErr"></span>
+        </div>
+        <div class="field-group">
+          <label>Confirmar contraseña</label>
+          <div class="pass-wrap">
+            <input type="password" id="regPass2" placeholder="Repite tu contraseña" required />
+            <button type="button" class="eye-btn" data-target="regPass2">👁</button>
+          </div>
+          <span class="field-err" id="regPass2Err"></span>
+        </div>
+        <label class="check-label terms">
+          <input type="checkbox" id="regTerms" />
+          Acepto los <a href="#">términos y condiciones</a>
+        </label>
+        <div class="auth-alert hidden" id="regAlert"></div>
+        <button type="submit" class="btn-auth">Crear cuenta</button>
+        <p class="auth-switch">¿Ya tienes cuenta?
+          <button type="button" class="link-btn" id="goLogin">Inicia sesión</button></p>
+      </form>
+    </div>
+  </div>
+</main><!-- /page-login -->
+
+<!-- ── PAGINA: PERFIL ── -->
+<main id="page-profile" class="page">
+  <div class="page-hero">
+    <div class="container">
+      <h1 class="page-hero-title">Mi Perfil</h1>
+    </div>
+  </div>
+  <div class="container profile-layout">
+
+    <!-- Sidebar perfil -->
+    <aside class="profile-sidebar">
+      <div class="profile-avatar" id="profileAvatar">?</div>
+      <h3 id="profileName">Usuario</h3>
+      <p id="profileEmail" class="profile-email">email@ejemplo.com</p>
+      <nav class="profile-nav">
+        <button class="profile-nav-btn active" data-tab="info">👤 Mi información</button>
+        <button class="profile-nav-btn" data-tab="orders">📦 Mis pedidos</button>
+      </nav>
+      <button class="btn-logout" id="logoutBtn">Cerrar sesión</button>
+    </aside>
+
+    <!-- Contenido del perfil -->
+    <div class="profile-content">
+
+      <!-- Tab: Info personal -->
+      <div class="profile-tab active" id="tab-info">
+        <h2 class="profile-tab-title">Información Personal</h2>
+        <form class="profile-form" id="profileForm">
+          <div class="fields-row">
+            <div class="field-group">
+              <label>Nombre</label>
+              <input type="text" id="profNombre" />
+            </div>
+            <div class="field-group">
+              <label>Apellido</label>
+              <input type="text" id="profApellido" />
+            </div>
+          </div>
+          <div class="field-group">
+            <label>Correo electrónico</label>
+            <input type="email" id="profEmail" />
+          </div>
+          <div class="field-group">
+            <label>Teléfono</label>
+            <input type="tel" id="profTel" placeholder="+57 300 000 0000" />
+          </div>
+          <div class="field-group">
+            <label>Ciudad</label>
+            <input type="text" id="profCiudad" placeholder="Bogotá" />
+          </div>
+          <button type="submit" class="btn-save-profile">Guardar cambios</button>
+          <div class="profile-success hidden" id="profileSuccess">✓ Cambios guardados correctamente</div>
+        </form>
+      </div>
+
+      <!-- Tab: Pedidos -->
+      <div class="profile-tab" id="tab-orders">
+        <h2 class="profile-tab-title">Mis Pedidos</h2>
+        <div class="orders-list" id="ordersList">
+          <div class="empty-state">
+            <span>📦</span>
+            <p>Aún no tienes pedidos.</p>
+            <button class="btn-primary" data-page="catalog">Ir al catálogo</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /profile-content -->
+  </div><!-- /profile-layout -->
+</main><!-- /page-profile -->
+
+<!-- ── PAGINA: CONTACTO ── -->
+<main id="page-contact" class="page">
+  <div class="page-hero">
+    <div class="container">
+      <h1 class="page-hero-title">Contáctanos</h1>
+      <p class="page-hero-sub">Estamos aquí para ayudarte</p>
+    </div>
+  </div>
+
+  <div class="container contact-layout">
+    <div class="contact-info-col">
+      <h2>Información de la tienda</h2>
+      <ul class="store-info-list">
+        <li>
+          <span class="info-icon">📍</span>
+          <div>
+            <strong>Dirección</strong>
+            <p>Calle 72 #15-30, Bogotá, Colombia</p>
+          </div>
+        </li>
+        <li>
+          <span class="info-icon">📞</span>
+          <div>
+            <strong>Teléfono</strong>
+            <p>+57 (601) 234-5678</p>
+          </div>
+        </li>
+        <li>
+          <span class="info-icon">✉️</span>
+          <div>
+            <strong>Correo</strong>
+            <p>hola@FPCMerch.co</p>
+          </div>
+        </li>
+        <li>
+          <span class="info-icon">🕐</span>
+          <div>
+            <strong>Horario de atención</strong>
+            <p>Lun – Sáb: 9:00 am – 7:00 pm</p>
+            <p>Dom: 10:00 am – 4:00 pm</p>
+          </div>
+        </li>
+      </ul>
+      <div class="map-placeholder">
+        <div class="map-pin">📍</div>
+        <p>FPCMerch<br />Bogotá, Colombia</p>
+      </div>
+    </div>
+
+    <div class="contact-form-col">
+      <h2>Envíanos un mensaje</h2>
+      <form class="contact-form" id="contactForm" novalidate>
+        <div class="fields-row">
+          <div class="field-group">
+            <label>Nombre</label>
+            <input type="text" id="ctxNombre" placeholder="Tu nombre" required />
+          </div>
+          <div class="field-group">
+            <label>Correo</label>
+            <input type="email" id="ctxEmail" placeholder="tu@correo.com" required />
+          </div>
+        </div>
+        <div class="field-group">
+          <label>Asunto</label>
+          <select id="ctxAsunto">
+            <option value="">Selecciona un tema</option>
+            <option>Seguimiento de pedido</option>
+            <option>Devolución o cambio</option>
+            <option>Información de producto</option>
+            <option>Personalización</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label>Mensaje</label>
+          <textarea id="ctxMsg" placeholder="Cuéntanos en qué podemos ayudarte..." rows="5" required></textarea>
+        </div>
+        <button type="submit" class="btn-auth">Enviar mensaje</button>
+        <div class="auth-alert hidden" id="contactSuccess"></div>
+      </form>
+    </div>
+  </div>
+</main><!-- /page-contact -->
+
+<!-- DRAWER DEL CARRITO -->
+<div class="cart-drawer-overlay" id="cartDrawerOverlay"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-drawer-header">
+    <h2>Mi Carrito <span class="cart-drawer-count" id="cartDrawerCount">(0)</span></h2>
+    <button class="close-drawer" id="closeCartDrawer">✕</button>
+  </div>
+  <div class="cart-drawer-body" id="cartDrawerBody">
+  </div>
+  <div class="cart-drawer-footer" id="cartDrawerFooter">
+  </div>
+</aside>
+
+<!-- NOTIFICACIONES -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-top">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <span class="footer-logo">⚽ FPCMerch</span>
+        <p>Tu tienda de fútbol número uno en Colombia. Pasión por el deporte, calidad en cada prenda.</p>
+        <div class="social-links">
+          <a href="#" aria-label="Instagram">📸</a>
+          <a href="#" aria-label="Facebook">👥</a>
+          <a href="#" aria-label="TikTok">🎵</a>
+          <a href="#" aria-label="YouTube">▶️</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Productos</h4>
+        <ul>
+          <li><a href="#" data-page="catalog" data-filter="camisetas">Camisetas</a></li>
+          <li><a href="#" data-page="catalog" data-filter="pantalones">Pantalones</a></li>
+          <li><a href="#" data-page="catalog" data-filter="chaquetas">Chaquetas</a></li>
+          <li><a href="#" data-page="catalog" data-filter="uniformes">Uniformes</a></li>
+          <li><a href="#" data-page="catalog" data-filter="accesorios">Accesorios</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Ayuda</h4>
+        <ul>
+          <li><a href="#" data-page="contact">Contacto</a></li>
+          <li><a href="#">Seguir mi pedido</a></li>
+          <li><a href="#">Devoluciones</a></li>
+          <li><a href="#">Guía de tallas</a></li>
+          <li><a href="#">Preguntas frecuentes</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Mi Cuenta</h4>
+        <ul>
+          <li><a href="#" data-page="login">Iniciar sesión</a></li>
+          <li><a href="#" data-page="login">Crear cuenta</a></li>
+          <li><a href="#" data-page="profile">Mis pedidos</a></li>
+          <li><a href="#" data-page="cart">Mi carrito</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container footer-bottom-inner">
+      <p>© 2025 FPCMerch. Todos los derechos reservados.</p>
+      <div class="payment-badges">
+        <span>💳 Visa</span>
+        <span>💳 Mastercard</span>
+        <span>📱 Nequi</span>
+        <span>📱 Daviplata</span>
+        <span>🏦 PSE</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- PUNTO DE ENTRADA JS (Los Modules) -->
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

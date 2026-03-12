@@ -1,0 +1,167 @@
+/* ============================================================
+   navbar.css — GOLAZO STORE
+   Top bar, navbar fijo, dropdown, búsqueda, hamburguesa
+   ============================================================ */
+
+/* ── Top Bar ── */
+.top-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1100;
+  background: var(--green);
+  height: var(--topbar-h);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.top-bar-inner {
+  display: flex; align-items: center; gap: 1rem;
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #000;
+  white-space: nowrap;
+  animation: ticker 20s linear infinite;
+}
+.top-bar-sep { opacity: 0.4; }
+
+@keyframes ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── Navbar ── */
+.navbar {
+  position: fixed; top: var(--topbar-h); left: 0; right: 0; z-index: 1000;
+  background: rgba(8, 12, 8, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(29,185,84,0.15);
+  height: var(--nav-h);
+  transition: background var(--transition);
+}
+.navbar.scrolled { background: rgba(8,12,8,0.98); }
+.nav-inner {
+  max-width: 1200px; margin: 0 auto; padding: 0 1.25rem;
+  height: 100%;
+  display: flex; align-items: center; gap: 2rem;
+}
+
+/* Logo */
+.nav-logo {
+  display: flex; align-items: baseline; gap: 0.25rem;
+  text-decoration: none; flex-shrink: 0;
+}
+.logo-ball { font-size: 1.3rem; }
+.logo-word {
+  font-family: var(--font-display);
+  font-size: 1.6rem; font-weight: 900;
+  letter-spacing: -0.02em; color: var(--white);
+  line-height: 1;
+}
+.logo-sub {
+  font-family: var(--font-display);
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.15em; color: var(--green);
+  text-transform: uppercase; margin-left: 2px;
+}
+
+/* Nav links */
+.nav-links {
+  display: flex; align-items: center; gap: 0.1rem;
+  margin-left: auto;
+}
+.nav-link {
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font-display);
+  font-size: 0.95rem; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: uppercase;
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+}
+.nav-link:hover, .nav-link.active { color: var(--white); background: rgba(255,255,255,0.07); }
+
+/* Dropdown */
+.nav-dropdown { position: relative; }
+.dropdown-menu {
+  position: absolute; top: calc(100% + 8px); left: 0;
+  background: var(--dark-2);
+  border: 1px solid rgba(29,185,84,0.2);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  min-width: 200px;
+  opacity: 0; pointer-events: none;
+  transform: translateY(-8px);
+  transition: all var(--transition);
+  box-shadow: var(--shadow-card);
+}
+.nav-dropdown:hover .dropdown-menu { opacity: 1; pointer-events: all; transform: translateY(0); }
+.dropdown-menu li a {
+  display: block; padding: 0.5rem 0.85rem;
+  font-size: 0.9rem; color: var(--muted);
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+}
+.dropdown-menu li a:hover { color: var(--white); background: rgba(29,185,84,0.1); }
+.arrow-down { font-size: 0.7rem; margin-left: 2px; }
+
+/* Nav actions */
+.nav-actions { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.search-wrap { position: relative; display: flex; align-items: center; }
+.search-input {
+  width: 0; padding: 0; opacity: 0; pointer-events: none;
+  background: var(--dark-3); border: 1px solid var(--gray);
+  border-radius: 999px; color: var(--white); font-size: 0.9rem;
+  transition: width 0.3s ease, opacity 0.3s ease, padding 0.3s ease;
+}
+.search-wrap.open .search-input {
+  width: 200px; padding: 0.45rem 1rem; opacity: 1; pointer-events: all;
+}
+.search-btn {
+  background: none; border: none; color: var(--muted); padding: 0.4rem;
+  border-radius: 50%; transition: color var(--transition);
+  display: flex; align-items: center;
+}
+.search-btn:hover { color: var(--white); }
+
+.nav-icon-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  background: none; border: none; color: var(--muted);
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition), background var(--transition);
+  position: relative;
+}
+.nav-icon-btn:hover { color: var(--white); background: rgba(255,255,255,0.07); }
+.nav-icon-label { font-size: 0.65rem; letter-spacing: 0.03em; text-transform: uppercase; }
+
+.cart-btn { position: relative; }
+.cart-badge {
+  position: absolute; top: -2px; right: -4px;
+  background: var(--green); color: #000;
+  font-size: 0.65rem; font-weight: 800;
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+}
+
+/* Hamburguesa */
+.hamburger {
+  display: none; flex-direction: column; gap: 5px;
+  background: none; border: none; padding: 4px;
+}
+.hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--white); border-radius: 2px;
+  transition: all var(--transition);
+}
+.hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger.active span:nth-child(2) { opacity: 0; }
+.hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Overlay móvil */
+.nav-overlay {
+  position: fixed; inset: 0; z-index: 990;
+  background: rgba(0,0,0,0.6); display: none;
+}
+.nav-overlay.open { display: block; }
