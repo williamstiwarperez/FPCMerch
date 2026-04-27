@@ -1,13 +1,38 @@
 /* ============================================================
-   modules/catalog.js — GOLAZO STORE
+   modules/catalog.js — FPCMerch
    Catálogo: filtros, renderizado, tarjetas, detalle de producto
+   Versión dinámica: consume la API REST en lugar del array estático
    ============================================================ */
 
-import { APP } from '../state/app.js';
-import { PRODUCTS } from '../data/products.js';
-import { formatPrice } from './utils.js';
-import { showPage, showToast } from './ui.js';
-import { addToCart } from './cart.js';
+import { APP }                         from '../state/app.js';
+import { fetchProducts, fetchProductById } from '../data/products.js';
+import { formatPrice }                 from './utils.js';
+import { showPage, showToast }         from './ui.js';
+import { addToCart }                   from './cart.js';
+
+/* ── Normalización de campos ─────────────────────────────────
+   La API devuelve los nombres de la BD (nombre, precio, etc.).
+   Esta función los convierte al formato que usa el frontend
+   (name, price, etc.) para no tener que tocar el resto del código.
+   ─────────────────────────────────────────────────────────── */
+function normalizeProduct(p) {
+  return {
+    id:       p.id,
+    name:     p.nombre,
+    cat:      p.cat,               // slug de la categoría (viene del JOIN)
+    price:    p.precio,
+    oldPrice: p.precio_anterior,   // null si no hay descuento
+    emoji:    p.emoji    || '⚽',
+    bg:       p.bg_clase || 'bg-gray',
+    sizes:    p.sizes    || [],    // array armado en el backend
+    stars:    p.estrellas,
+    badge:    p.badge,             // 'new' | 'sale' | 'hot' | null
+    isNew:    p.es_nuevo === 1,
+    desc:     p.descripcion || '',
+    imagen:   p.imagen || null,    // ruta img/producto.jpg o null
+    features: [],                  // se puede agregar a la BD en el futuro
+  };
+}
 
 /* ── Filtros ─────────────────────────────────────────────── */
 
@@ -25,34 +50,25 @@ export function setFilter(key, val) {
 }
 
 /**
- * Devuelve el array de productos aplicando todos los filtros activos.
- * @returns {Array}
+ * Obtiene los productos desde la API y aplica los filtros
+ * de precio y talla en el cliente (los demás se pasan a la API).
+ * @returns {Promise<Array>}
  */
-export function getFilteredProducts() {
-  let list = [...PRODUCTS];
+export async function getFilteredProducts() {
+  // Filtros que se envían a la API como query params
+  const params = {};
+  if (APP.filters.cat && APP.filters.cat !== 'todos') params.cat    = APP.filters.cat;
+  if (APP.filters.search)                              params.search = APP.filters.search;
+  if (APP.filters.sort && APP.filters.sort !== 'default') params.sort = APP.filters.sort;
 
-  if (APP.filters.cat && APP.filters.cat !== 'todos') {
-    list = list.filter(p => p.cat === APP.filters.cat);
-  }
+  const raw = await fetchProducts(params);
+  let list  = raw.map(normalizeProduct);
 
+  // Filtros que se aplican en el cliente (precio y talla)
   list = list.filter(p => p.price <= APP.filters.price);
 
   if (APP.filters.size && APP.filters.size !== 'todas') {
     list = list.filter(p => p.sizes.includes(APP.filters.size));
-  }
-
-  if (APP.filters.search) {
-    const q = APP.filters.search.toLowerCase();
-    list = list.filter(p =>
-      p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q)
-    );
-  }
-
-  switch (APP.filters.sort) {
-    case 'price-asc':  list.sort((a, b) => a.price - b.price); break;
-    case 'price-desc': list.sort((a, b) => b.price - a.price); break;
-    case 'name-asc':   list.sort((a, b) => a.name.localeCompare(b.name)); break;
-    case 'newest':     list = list.filter(p => p.isNew).concat(list.filter(p => !p.isNew)); break;
   }
 
   return list;
@@ -61,15 +77,23 @@ export function getFilteredProducts() {
 /**
  * Re-renderiza el grid del catálogo con los filtros activos.
  */
-export function renderCatalog() {
+export async function renderCatalog() {
   const grid    = document.getElementById('catalogGrid');
   const noRes   = document.getElementById('noResults');
   const countEl = document.getElementById('resultsCount');
   if (!grid) return;
 
-  const products = getFilteredProducts();
+  // Mostrar estado de carga mientras llega la respuesta
+  grid.innerHTML = `
+    <div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--muted);">
+      <span style="font-size:2rem; display:block; margin-bottom:0.5rem;">⏳</span>
+      Cargando productos...
+    </div>`;
+
+  const products = await getFilteredProducts();
 
   grid.innerHTML = '';
+
   if (products.length === 0) {
     noRes?.classList.remove('hidden');
     if (countEl) countEl.textContent = '0 resultados';
@@ -168,27 +192,52 @@ export function initCatalogFilters() {
 /* ── Tarjeta de Producto ─────────────────────────────────── */
 
 /**
+ * Construye el HTML de la imagen del producto.
+ * Si tiene ruta de imagen real → la muestra con fallback al emoji.
+ * Si no tiene imagen → muestra el emoji directamente.
+ */
+function buildImageHtml(p) {
+  if (p.imagen) {
+    // Imagen real con fallback: si no carga el archivo, muestra el emoji
+    return `
+      <img
+        src="${p.imagen}"
+        alt="${p.name}"
+        style="width:100%; height:100%; object-fit:cover; display:block;"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+      />
+      <div class="product-img-svg" style="display:none;">${p.emoji}</div>
+    `;
+  }
+  // Sin imagen: mostrar emoji como siempre
+  return `<div class="product-img-svg">${p.emoji}</div>`;
+}
+
+/**
  * Crea y devuelve un elemento DOM con la tarjeta de un producto.
- * @param {Object} p  - Objeto de producto de PRODUCTS
+ * @param {Object} p  - Producto normalizado
  * @returns {HTMLElement}
  */
 export function createProductCard(p) {
-  const stars  = '★'.repeat(p.stars) + '☆'.repeat(5 - p.stars);
-  const badge  = p.badge
+  const stars = '★'.repeat(p.stars) + '☆'.repeat(5 - p.stars);
+
+  const badge = p.badge
     ? `<span class="product-badge badge-${p.badge}">${
         p.badge === 'new' ? 'Nuevo' : p.badge === 'sale' ? 'Oferta' : 'Popular'
       }</span>`
     : '';
+
   const oldP = p.oldPrice
     ? `<span class="product-price-old">${formatPrice(p.oldPrice)}</span>`
     : '';
 
   const card = document.createElement('div');
-  card.className = 'product-card';
+  card.className  = 'product-card';
   card.dataset.id = p.id;
+
   card.innerHTML = `
     <div class="product-img-wrap ${p.bg}">
-      <div class="product-img-svg">${p.emoji}</div>
+      ${buildImageHtml(p)}
       ${badge}
       <button class="quick-add-btn" data-id="${p.id}">+ Agregar al carrito</button>
     </div>
@@ -204,13 +253,13 @@ export function createProductCard(p) {
     </div>
   `;
 
-  // Abrir detalle al hacer click en la tarjeta
+  // Abrir detalle al hacer clic en la tarjeta
   card.addEventListener('click', e => {
     if (e.target.closest('.quick-add-btn')) return;
     showProductDetail(p.id);
   });
 
-  // Agregar rápido al carrito
+  // Botón rápido "Agregar al carrito"
   card.querySelector('.quick-add-btn').addEventListener('click', e => {
     e.stopPropagation();
     addToCart({ ...p, selectedSize: p.sizes[1] || p.sizes[0], qty: 1 });
@@ -221,26 +270,71 @@ export function createProductCard(p) {
 
 /* ── Productos Destacados (Home) ─────────────────────────── */
 
-export function renderFeatured() {
+export async function renderFeatured() {
   const grid = document.getElementById('featuredGrid');
   if (!grid) return;
+
+  // Estado de carga
+  grid.innerHTML = `
+    <div style="grid-column:1/-1; text-align:center; padding:2rem; color:var(--muted);">
+      Cargando destacados...
+    </div>`;
+
+  // Traer todos los productos (sin filtros) y quedarse con los destacados
+  const raw      = await fetchProducts();
+  const products = raw.map(normalizeProduct);
+
   grid.innerHTML = '';
-  PRODUCTS.filter(p => p.badge || p.isNew)
-          .slice(0, 8)
-          .forEach(p => grid.appendChild(createProductCard(p)));
+  products
+    .filter(p => p.badge || p.isNew)
+    .slice(0, 8)
+    .forEach(p => grid.appendChild(createProductCard(p)));
 }
 
 /* ── Detalle de Producto ─────────────────────────────────── */
 
-export function showProductDetail(id) {
-  const p = PRODUCTS.find(pr => pr.id === id);
-  if (!p) return;
+export async function showProductDetail(id) {
+  const container = document.getElementById('productDetail');
 
+  // Mostrar carga mientras se obtiene el detalle
+  container.innerHTML = `
+    <div style="grid-column:1/-1; text-align:center; padding:4rem; color:var(--muted);">
+      <span style="font-size:3rem; display:block; margin-bottom:1rem;">⏳</span>
+      Cargando producto...
+    </div>`;
+  showPage('product');
+
+  // Obtener el producto desde la API
+  const raw = await fetchProductById(id);
+  if (!raw) {
+    container.innerHTML = `
+      <div style="grid-column:1/-1; text-align:center; padding:4rem; color:var(--muted);">
+        <span style="font-size:3rem; display:block; margin-bottom:1rem;">😕</span>
+        Producto no encontrado.
+        <br/><br/>
+        <button class="btn-back" id="btnBackToShop">← Volver al catálogo</button>
+      </div>`;
+    document.getElementById('btnBackToShop')
+      ?.addEventListener('click', () => showPage('catalog'));
+    return;
+  }
+
+  const p = normalizeProduct(raw);
   APP.currentProduct = { ...p, selectedSize: p.sizes[1] || p.sizes[0], qty: 1 };
 
-  const container = document.getElementById('productDetail');
-  const discount  = p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : null;
-  const stars     = '★'.repeat(p.stars) + '☆'.repeat(5 - p.stars);
+  const discount = p.oldPrice ? Math.round((1 - p.price / p.oldPrice) * 100) : null;
+  const stars    = '★'.repeat(p.stars) + '☆'.repeat(5 - p.stars);
+
+  // Imagen principal del detalle (con fallback al emoji)
+  const mainImgHtml = p.imagen
+    ? `<img
+         src="${p.imagen}"
+         alt="${p.name}"
+         style="width:100%; height:100%; object-fit:cover; border-radius:var(--radius-lg);"
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+       />
+       <div style="display:none; font-size:8rem; align-items:center; justify-content:center; width:100%; height:100%;">${p.emoji}</div>`
+    : `<div style="font-size:8rem;">${p.emoji}</div>`;
 
   container.innerHTML = `
     <div style="grid-column:1/-1;">
@@ -248,9 +342,16 @@ export function showProductDetail(id) {
     </div>
 
     <div class="detail-gallery">
-      <div class="detail-img-main ${p.bg}" style="font-size:8rem;">${p.emoji}</div>
+      <div class="detail-img-main ${p.bg}" style="overflow:hidden;">
+        ${mainImgHtml}
+      </div>
       <div class="detail-img-thumbs">
-        <div class="detail-thumb ${p.bg} active">${p.emoji}</div>
+        <div class="detail-thumb ${p.bg} active"
+             style="overflow:hidden; font-size:1.5rem; display:flex; align-items:center; justify-content:center;">
+          ${p.imagen
+            ? `<img src="${p.imagen}" alt="${p.name}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'; this.parentElement.textContent='${p.emoji}';" />`
+            : p.emoji}
+        </div>
         <div class="detail-thumb bg-gray">📦</div>
         <div class="detail-thumb bg-gray">🏷️</div>
       </div>
@@ -272,11 +373,14 @@ export function showProductDetail(id) {
       <hr class="detail-divider" />
 
       <div>
-        <span class="detail-label">Talla: <strong id="selectedSizeLabel">${APP.currentProduct.selectedSize}</strong></span>
+        <span class="detail-label">
+          Talla: <strong id="selectedSizeLabel">${APP.currentProduct.selectedSize}</strong>
+        </span>
         <div class="size-selector" id="sizeSelector">
-          ${p.sizes.map(s =>
-            `<button class="size-opt ${s === APP.currentProduct.selectedSize ? 'active' : ''}" data-size="${s}">${s}</button>`
-          ).join('')}
+          ${p.sizes.map(s => `
+            <button class="size-opt ${s === APP.currentProduct.selectedSize ? 'active' : ''}"
+                    data-size="${s}">${s}</button>
+          `).join('')}
         </div>
       </div>
 
@@ -292,16 +396,17 @@ export function showProductDetail(id) {
       </div>
 
       <div class="detail-features">
-        ${(p.features || []).map(f => `<div class="feature-item"><span>✓</span><span>${f}</span></div>`).join('')}
+        ${(p.features || []).map(f =>
+          `<div class="feature-item"><span>✓</span><span>${f}</span></div>`
+        ).join('')}
         <div class="feature-item"><span>🚚</span><span>Envío gratis en este producto</span></div>
         <div class="feature-item"><span>↩️</span><span>Devolución gratuita en 30 días</span></div>
       </div>
     </div>
   `;
 
-  showPage('product');
+  // ── Eventos del detalle ───────────────────────────────────
 
-  // Eventos del detalle
   document.getElementById('btnBackToShop')
     ?.addEventListener('click', () => showPage('catalog'));
 
@@ -334,3 +439,6 @@ export function showProductDetail(id) {
   document.getElementById('btnAddToCart')
     ?.addEventListener('click', () => addToCart({ ...APP.currentProduct }));
 }
+
+
+
